@@ -4,6 +4,7 @@ interface BlogodyExportProps {
   key: string
 }
 
+// https://github.com/johnloy/esm-commonjs-interop-manual
 // http://choly.ca/post/typescript-json/
 
 export class BlogodyExport {
@@ -14,7 +15,7 @@ export class BlogodyExport {
     this.api = api
   }
 
-  async exportData(): Promise<JSON | null> {
+  async exportData(): Promise<any | null> {
     const api = this.api
 
     const settings = await api.settings()
@@ -30,6 +31,6 @@ export class BlogodyExport {
     }
 
     const data = { blogody, settings, tags, authors, posts, pages }
-    return JSON.parse(data)
+    return data
   }
 }
