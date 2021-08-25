@@ -36,7 +36,8 @@ interface ExportResult {
 
 const exportProject =
   (api: BlogodyAPI) =>
-  async ({ format }: ExportProps): Promise<ExportResult | null> => {
+  async (props?: ExportProps): Promise<ExportResult | null> => {
+    const format = props?.format ?? 'html'
     const settings = await api.settings()
     const tags = await api.authors()
     const authors = await api.authors()
@@ -130,8 +131,8 @@ export class BlogodyExport {
     this.api = api
   }
 
-  async export({ format }: ExportProps): Promise<ExportResult | null> {
-    return exportProject(this.api)({ format })
+  async export(props?: ExportProps): Promise<ExportResult | null> {
+    return exportProject(this.api)(props)
   }
 
   async writeFile({ jsonData }: writeFileProps): Promise<void> {
