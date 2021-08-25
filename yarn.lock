@@ -38,10 +38,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@blogody/api-client@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@blogody/api-client/-/api-client-1.3.0.tgz#3b0017aa798ce347ff6aea2f30ff6bceb24c614b"
-  integrity sha512-Fc0YEFnkkvMwDnxZDcFSkum7U/bOUaeB7k+5o16yYWqP/uXFPJUWunLes58dUWtIlDGwt4vvVShm5zvNy+TPCw==
+"@blogody/api-client@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@blogody/api-client/-/api-client-1.4.0.tgz#d35f9fcb75128fdb13e73109596396170ab96b85"
+  integrity sha512-miLhyBZ7UnR+iNO3OWm7DjY0u0fIWMFe+KDd1/5VG5MPtxPeA0oK0E9O77mkjQ9g7G+AsgUQbcnop+xLL/cWIg==
   dependencies:
     graphql "^15.5.1"
     react "^17.0.2"
