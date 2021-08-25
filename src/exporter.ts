@@ -3,7 +3,7 @@ import { unified } from 'unified'
 import html from 'rehype-parse'
 import rehype2remark from 'rehype-remark'
 import markdown from 'remark-stringify'
-import { open, FileHandle } from 'fs/promises'
+import { promises as fs } from 'fs'
 
 const processor = unified().use(html).use(rehype2remark).use(markdown)
 
@@ -79,9 +79,9 @@ const writeProject = async ({ jsonData }: writeFileProps): Promise<void> => {
   const fileName = `${jsonData.blogody.project}.blogody.${timestamp}.json`
   const filePath = `./${fileName}`
 
-  let handle: FileHandle | null = null
+  let handle
   try {
-    handle = await open(filePath, 'w')
+    handle = await fs.open(filePath, 'w')
     const json = JSON.stringify(jsonData)
     await handle.writeFile(json)
   } finally {
@@ -95,7 +95,7 @@ const writeProjectPosts = async ({ jsonData }: writeFileProps): Promise<void> =>
     const fileName = `${post.slug}.${format}`
     const filePath = `./${fileName}`
 
-    open(filePath, 'w').then((handle) => {
+    fs.open(filePath, 'w').then((handle) => {
       const content = post.markdown ? post.markdown : post.html
       handle.writeFile(content).finally(() => {
         handle.close()
@@ -110,7 +110,7 @@ const writeProjectPages = async ({ jsonData }: writeFileProps): Promise<void> =>
     const fileName = `${page.slug}.${format}`
     const filePath = `./${fileName}`
 
-    open(filePath, 'w').then((handle) => {
+    fs.open(filePath, 'w').then((handle) => {
       const content = page.markdown ? page.markdown : page.html
       handle.writeFile(content).finally(() => {
         handle.close()
