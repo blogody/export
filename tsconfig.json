@@ -1,9 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@blogody/*": ["./src"]
-    }
+    "baseUrl": "."
   }
 }

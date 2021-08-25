@@ -22,7 +22,7 @@ More background information can be found in this [news article](https://www.blog
     const api = new BlogodyExport({ key: 'YOUR BLOGODY API ACCESS KEY' })
 
     // make API calls
-    const data = await api.export({ format: 'Markdown' })
+    const data = await api.export({ format: 'markdown' })
 
     // Other transforms can go here, e.g. strip settings (Do not strip the blogody section!)
     const fileData = { ...data, settings: undefined }
@@ -31,8 +31,7 @@ More background information can be found in this [news article](https://www.blog
     await api.writeFile({ jsonData: fileData })
 
     // write articles to separate files
-    await  api.writePosts({ jsonData: fileData })
-    
+    await api.writePosts({ jsonData: fileData })
     ```
 
 Currently supported formats are : `HTML` and `Markdown`.

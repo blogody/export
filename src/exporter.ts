@@ -1,11 +1,126 @@
-import { BlogodyAPI } from '@blogody/api-client'
+import { BlogodyAPI, Settings, Tag, Author, Post, Page } from '@blogody/api-client'
+import { unified } from 'unified'
+import html from 'rehype-parse'
+import rehype2remark from 'rehype-remark'
+import markdown from 'remark-stringify'
+import { open, FileHandle } from 'fs/promises'
+
+const processor = unified().use(html).use(rehype2remark).use(markdown)
+
+interface ExportProps {
+  format?: 'html' | 'markdown'
+}
+
+interface Blogody {
+  version: string
+  project: string
+  timestamp: string
+}
+
+interface ExportPost extends Post {
+  markdown?: string
+}
+
+interface ExportPage extends Page {
+  markdown?: string
+}
+
+interface ExportResult {
+  blogody: Blogody
+  settings: Settings | null
+  tags: Tag[]
+  authors: Author[]
+  posts: ExportPost[]
+  pages: ExportPage[]
+}
+
+const exportProject =
+  (api: BlogodyAPI) =>
+  async ({ format }: ExportProps): Promise<ExportResult | null> => {
+    const settings = await api.settings()
+    const tags = await api.authors()
+    const authors = await api.authors()
+
+    const url = settings?.url?.split('.')[0]
+    const project = url?.replace('https://', '') || 'project'
+
+    const blogody: Blogody = {
+      version: '1.0.0',
+      project,
+      timestamp: new Date().toISOString(),
+    }
+
+    const posts = await api.posts()
+    const pages = await api.posts()
+
+    if (format === 'html') return { blogody, settings, tags, authors, posts, pages }
+    if (format !== 'markdown') return null
+
+    const mdPosts = posts.map((post) => {
+      const markdown = processor.processSync(post.html).toString()
+      return { ...post, html: '', markdown }
+    })
+
+    const mdPages = pages.map((page) => {
+      const markdown = processor.processSync(page.html).toString()
+      return { ...page, html: '', markdown }
+    })
+
+    return { blogody, settings, tags, authors, posts: mdPosts, pages: mdPages }
+  }
+
+interface writeFileProps {
+  jsonData: ExportResult
+}
+
+const writeProject = async ({ jsonData }: writeFileProps): Promise<void> => {
+  const timestamp = new Date().toISOString().replace('T', '-').replace(/:/g, '-').split('.')[0]
+  const fileName = `${jsonData.blogody.project}.blogody.${timestamp}.json`
+  const filePath = `./${fileName}`
+
+  let handle: FileHandle | null = null
+  try {
+    handle = await open(filePath, 'w')
+    const json = JSON.stringify(jsonData)
+    await handle.writeFile(json)
+  } finally {
+    await handle?.close()
+  }
+}
+
+const writeProjectPosts = async ({ jsonData }: writeFileProps): Promise<void> => {
+  jsonData.posts.map((post) => {
+    const format = post.markdown ? 'md' : 'html'
+    const fileName = `${post.slug}.${format}`
+    const filePath = `./${fileName}`
+
+    open(filePath, 'w').then((handle) => {
+      const content = post.markdown ? post.markdown : post.html
+      handle.writeFile(content).finally(() => {
+        handle.close()
+      })
+    })
+  })
+}
+
+const writeProjectPages = async ({ jsonData }: writeFileProps): Promise<void> => {
+  jsonData.pages.map((page) => {
+    const format = page.markdown ? 'md' : 'html'
+    const fileName = `${page.slug}.${format}`
+    const filePath = `./${fileName}`
+
+    open(filePath, 'w').then((handle) => {
+      const content = page.markdown ? page.markdown : page.html
+      handle.writeFile(content).finally(() => {
+        handle.close()
+      })
+    })
+  })
+}
 
 interface BlogodyExportProps {
   key: string
 }
-
-// https://github.com/johnloy/esm-commonjs-interop-manual
-// http://choly.ca/post/typescript-json/
 
 export class BlogodyExport {
   private api: BlogodyAPI
@@ -15,22 +130,19 @@ export class BlogodyExport {
     this.api = api
   }
 
-  async exportData(): Promise<any | null> {
-    const api = this.api
+  async export({ format }: ExportProps): Promise<ExportResult | null> {
+    return exportProject(this.api)({ format })
+  }
 
-    const settings = await api.settings()
-    const tags = await api.authors()
-    const authors = await api.authors()
-    const posts = await api.posts()
-    const pages = await api.posts()
+  async writeFile({ jsonData }: writeFileProps): Promise<void> {
+    await writeProject({ jsonData })
+  }
 
-    const blogody = {
-      version: '1.0.0',
-      project: 'TestProject',
-      timestamp: new Date().toISOString(),
-    }
+  async writePosts({ jsonData }: writeFileProps): Promise<void> {
+    await writeProjectPosts({ jsonData })
+  }
 
-    const data = { blogody, settings, tags, authors, posts, pages }
-    return data
+  async writePages({ jsonData }: writeFileProps): Promise<void> {
+    await writeProjectPages({ jsonData })
   }
 }
