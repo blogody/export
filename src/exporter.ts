@@ -1,7 +1,7 @@
 import { BlogodyAPI, Settings, Tag, Author, Post, Page } from '@blogody/api-client'
 import { promises as fs } from 'fs'
 
-import { htmlToMarkdown } from './htmlToMarkdown'
+import { htmlToMarkdown } from './htmlToMarkdown.js'
 
 interface ExportProps {
   format?: 'html' | 'markdown'
