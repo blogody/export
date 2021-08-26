@@ -1,11 +1,7 @@
 import { BlogodyAPI, Settings, Tag, Author, Post, Page } from '@blogody/api-client'
-import { unified } from 'unified'
-import html from 'rehype-parse'
-import rehype2remark from 'rehype-remark'
-import markdown from 'remark-stringify'
 import { promises as fs } from 'fs'
 
-const processor = unified().use(html).use(rehype2remark).use(markdown)
+import { htmlToMarkdown } from './htmlToMarkdown'
 
 interface ExportProps {
   format?: 'html' | 'markdown'
@@ -57,14 +53,16 @@ const exportProject =
     if (format === 'html') return { blogody, settings, tags, authors, posts, pages }
     if (format !== 'markdown') return null
 
-    const mdPosts = posts.map((post) => {
-      const markdown = processor.processSync(post.html).toString()
-      return { ...post, html: '', markdown }
+    const mdPostPromises = posts.map((post) => htmlToMarkdown(post.html))
+    const postMds = await Promise.all(mdPostPromises)
+    const mdPosts = posts.map((post, i) => {
+      return { ...post, html: '', markdown: postMds[i] }
     })
 
-    const mdPages = pages.map((page) => {
-      const markdown = processor.processSync(page.html).toString()
-      return { ...page, html: '', markdown }
+    const mdPagePromises = pages.map((page) => htmlToMarkdown(page.html))
+    const pageMds = await Promise.all(mdPagePromises)
+    const mdPages = pages.map((page, i) => {
+      return { ...page, html: '', markdown: pageMds[i] }
     })
 
     return { blogody, settings, tags, authors, posts: mdPosts, pages: mdPages }
